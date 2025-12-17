@@ -5,7 +5,7 @@ A Next.js application for generating and managing AI-assisted roofing and report
 ## Features
 
 - User authentication with a dedicated login page (login layout excludes the site navbar)
-- Image analysis API integration (Google Gemini)
+- Image analysis API integration (Google Gemini or other AI providers)
 - Roof/report description generator UI
 - Model selection UI and persistence to the database
 - Prisma ORM with PostgreSQL
@@ -45,7 +45,7 @@ Example `.env`:
 
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/report_ai
-GOOGLE_API_KEY=api_key
+GOOGLE_API_KEY=your_key_here
 ```
 
 4. Prisma setup
