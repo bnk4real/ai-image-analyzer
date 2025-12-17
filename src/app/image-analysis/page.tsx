@@ -52,7 +52,7 @@ export default function Home() {
         Array.from(files).forEach((f) => fd.append("images", f));
         fd.append("prompt", prompt);
         try {
-            const res = await fetch("/api/analyze", { method: "POST", body: fd });
+            const res = await fetch("/ai-image-analyzer/api/analyze", { method: "POST", body: fd });
             if (!res.ok) {
                 const text = await res.text();
                 throw new Error(text || `Request failed: ${res.status}`);
@@ -76,7 +76,7 @@ export default function Home() {
                 size: f.size
             })) : [];
 
-            const res = await fetch("/api/save-report", {
+            const res = await fetch("/ai-image-analyzer/api/save-report", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

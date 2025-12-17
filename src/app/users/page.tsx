@@ -17,7 +17,7 @@ const UsersPage = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await fetch("/api/users");
+                const response = await fetch("/ai-image-analyzer/api/users");
                 if (!response.ok) {
                     throw new Error("Failed to fetch users");
                 }

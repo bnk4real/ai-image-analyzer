@@ -16,7 +16,7 @@ const SettingsPage = () => {
     useEffect(() => {
         const fetchModels = async () => {
             try {
-                const response = await fetch("/api/list-models");
+                const response = await fetch("/ai-image-analyzer/api/list-models");
                 if (!response.ok) {
                     throw new Error("Failed to fetch models");
                 }
@@ -32,7 +32,7 @@ const SettingsPage = () => {
             await fetchModels();
 
             try {
-                const res = await fetch("/api/saved-model");
+                const res = await fetch("/ai-image-analyzer/api/saved-model");
                 if (res.ok) {
                     const json = await res.json();
                     if (json.model && json.model.name) {
@@ -57,7 +57,7 @@ const SettingsPage = () => {
     const handleSaveModel = async () => {
         setLoading(true);
         try {
-            const response = await fetch("/api/save-model", {
+            const response = await fetch("/ai-image-analyzer/api/save-model", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ model: selectedModel }),

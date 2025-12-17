@@ -57,7 +57,7 @@ export default function RoofingReportPage() {
         setDescription("");
         setError(null);
         try {
-            const response = await fetch("/api/roofing", {
+            const response = await fetch("/ai-image-analyzer/api/roofing", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

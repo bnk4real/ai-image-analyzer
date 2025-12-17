@@ -17,7 +17,7 @@ export async function analyzeImages(formData: FormData): Promise<any> {
     fd.append("prompt", prompt);
 
     try {
-        const res = await fetch("/api/analyze", {
+        const res = await fetch("/ai-image-analyzer/api/analyze", {
             method: "POST",
             body: fd,
         });
