@@ -2,6 +2,8 @@
 "use client";
 
 import { useState } from "react";
+import PageHeader from "@/components/PageHeader";
+import { AlertIcon, Spinner } from "@/components/Icons";
 
 // Helper component to parse and format the report content
 const FormattedReport = ({ content }: { content: string }) => {
@@ -14,25 +16,25 @@ const FormattedReport = ({ content }: { content: string }) => {
         // Replace **text** with <strong>text</strong> for bolding
         line = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         // Replace [text] with a placeholder style
-        line = line.replace(/\[(.*?)\]/g, '<span class="text-gray-500 italic">[$1]</span>');
+        line = line.replace(/\[(.*?)\]/g, '<span class="text-muted italic">[$1]</span>');
         return line;
     };
 
     return (
-        <div className="prose prose-sm max-w-none">
+        <div className="space-y-2 text-sm leading-relaxed">
             {lines.map((line, index) => {
                 const trimmedLine = line.trim();
 
                 if (trimmedLine.startsWith('---')) {
-                    return <hr key={index} className="my-6 border-gray-300" />;
+                    return <hr key={index} className="my-6 border-line" />;
                 }
                 // Main section headers like "1. Inspection Details"
                 if (trimmedLine.match(/^\d+\.\s/)) {
-                    return <h3 key={index} className="text-xl font-semibold mt-6 mb-3" dangerouslySetInnerHTML={{ __html: formatLine(trimmedLine) }} />;
+                    return <h3 key={index} className="mb-3 mt-6 text-lg font-semibold" dangerouslySetInnerHTML={{ __html: formatLine(trimmedLine) }} />;
                 }
                 // Sub-section headers like "* 3.1. Roof Surface/Field"
                 if (trimmedLine.match(/^\*\s\d+\.\d+\./)) {
-                    return <h4 key={index} className="text-lg font-semibold mt-4 mb-2" dangerouslySetInnerHTML={{ __html: formatLine(trimmedLine.substring(2)) }} />;
+                    return <h4 key={index} className="mb-2 mt-4 text-base font-semibold" dangerouslySetInnerHTML={{ __html: formatLine(trimmedLine.substring(2)) }} />;
                 }
                 // List items like "* Date of Inspection: [YYYY-MM-DD]"
                 if (trimmedLine.startsWith('*')) {
@@ -81,39 +83,49 @@ export default function RoofingReportPage() {
     };
 
     return (
-        <div className="container mx-auto p-4">
-            <div className="max-w-3xl mx-auto">
-                <h1 className="text-3xl font-bold mb-6 text-center">Roofing Report Description Generator</h1>
-                <div className="bg-white shadow-lg rounded-lg p-8">
-                    <textarea
-                        className="w-full p-3 border border-gray-300 rounded-md mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                        rows={5}
-                        placeholder="e.g., 'The house has a 15-year-old architectural shingle roof. There are visible signs of hail damage on the south slope and the gutters are clogged with leaves.'"
-                        value={prompt}
-                        onChange={(e) => setPrompt(e.target.value)}
-                    />
-                    <button
-                        className="w-full bg-blue-600 text-white px-4 py-3 rounded-md font-semibold hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
-                        onClick={generateDescription}
-                        disabled={loading || !prompt}
-                    >
-                        {loading ? "Generating..." : "Generate Description"}
-                    </button>
-                </div>
+        <div className="mx-auto max-w-3xl">
+            <PageHeader
+                title="Roofing Report"
+                description="Describe the roof and let AI draft the report description."
+            />
 
-                {error && (
-                    <div className="mt-8 p-4 border-l-4 border-red-500 bg-red-100 text-red-700">
-                        <p>{error}</p>
-                    </div>
-                )}
-
-                {description && (
-                    <div className="mt-8 p-8 border rounded-lg bg-white shadow-md">
-                        <h2 className="text-2xl font-semibold mb-6 border-b pb-3">Generated Report</h2>
-                        <FormattedReport content={description} />
-                    </div>
-                )}
+            <div className="card p-6 sm:p-8">
+                <label htmlFor="roofing-prompt" className="label">
+                    Roof details
+                </label>
+                <textarea
+                    id="roofing-prompt"
+                    className="input mb-4 resize-none"
+                    rows={5}
+                    placeholder="e.g., 'The house has a 15-year-old architectural shingle roof. There are visible signs of hail damage on the south slope and the gutters are clogged with leaves.'"
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                />
+                <button className="btn-primary w-full py-3" onClick={generateDescription} disabled={loading || !prompt}>
+                    {loading ? (
+                        <>
+                            <Spinner />
+                            Generating...
+                        </>
+                    ) : (
+                        "Generate Description"
+                    )}
+                </button>
             </div>
+
+            {error && (
+                <div className="alert-error mt-6 flex items-start gap-2.5" role="alert">
+                    <AlertIcon className="mt-0.5 shrink-0" width={18} height={18} />
+                    <p>{error}</p>
+                </div>
+            )}
+
+            {description && (
+                <div className="card mt-6 p-6 sm:p-8">
+                    <h2 className="mb-5 border-b border-line pb-3 text-lg font-semibold">Generated Report</h2>
+                    <FormattedReport content={description} />
+                </div>
+            )}
         </div>
     );
 }

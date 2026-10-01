@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useState, useRef } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import PageHeader from "@/components/PageHeader";
+import { AlertIcon, CheckIcon, Spinner, UploadIcon } from "@/components/Icons";
 
 export default function Home() {
     const [files, setFiles] = useState<FileList | null>(null);
@@ -101,158 +104,132 @@ export default function Home() {
     };
 
     return (
-        <main className="container mx-auto p-6 max-w-4xl">
-            <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
-                <div className="bg-blue-600 p-6 text-white">
-                    <h1 className="text-3xl font-bold">AI Image Analysis</h1>
-                    <p className="mt-2 opacity-90">Upload images of property defects or conditions to generate a professional inspection report.</p>
-                </div>
-                
-                <div className="p-8">
-                    <form onSubmit={onSubmit} className="space-y-8">
-                        {/* File Upload Area */}
-                        <div>
-                            <label className="block text-gray-700 text-sm font-bold mb-2">
-                                Upload Images
-                            </label>
-                            <div 
-                                className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ease-in-out ${
-                                    dragActive ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"
-                                }`}
-                                onDragEnter={handleDrag}
-                                onDragLeave={handleDrag}
-                                onDragOver={handleDrag}
-                                onDrop={handleDrop}
-                            >
-                                <input
-                                    ref={fileInputRef}
-                                    className="hidden"
-                                    id="file_input"
-                                    type="file"
-                                    multiple
-                                    accept="image/*"
-                                    onChange={handleChange}
-                                />
-                                
-                                <div className="flex flex-col items-center justify-center space-y-3">
-                                    <div className="p-3 bg-blue-100 rounded-full text-blue-600">
-                                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p className="text-lg font-medium text-gray-700">
-                                            Drag & drop images here, or <button type="button" onClick={onButtonClick} className="text-blue-600 hover:underline font-semibold">browse</button>
-                                        </p>
-                                        <p className="text-sm text-gray-500 mt-1">Supports JPG, PNG, WEBP</p>
-                                    </div>
-                                </div>
-                            </div>
+        <div className="mx-auto max-w-3xl">
+            <PageHeader
+                title="New Report"
+                description="Upload images of property defects or conditions to generate an inspection report."
+                actions={
+                    <Link href="/reports" className="btn-secondary">
+                        Back to Reports
+                    </Link>
+                }
+            />
 
-                            {/* File Preview List */}
-                            {files && files.length > 0 && (
-                                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {Array.from(files).map((file, idx) => (
-                                        <div key={idx} className="relative group rounded-lg overflow-hidden border border-gray-200">
-                                            <div className="aspect-square bg-gray-100 flex items-center justify-center text-xs text-gray-500">
-                                                {/* In a real app, use URL.createObjectURL(file) for preview */}
-                                                <span className="p-2 text-center break-all">{file.name}</span>
-                                            </div>
-                                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all" />
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Prompt Area */}
-                        <div>
-                            <label htmlFor="prompt" className="block text-gray-700 text-sm font-bold mb-2">
-                                Analysis Instructions (Optional)
-                            </label>
-                            <textarea
-                                id="prompt"
-                                rows={4}
-                                className="block w-full p-4 text-gray-900 border border-gray-300 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
-                                placeholder="E.g., 'Focus on the water damage on the ceiling', 'Check for structural cracks', 'Assess the condition of the roof shingles'..."
-                                value={prompt}
-                                onChange={(e) => setPrompt(e.target.value)}
-                            ></textarea>
-                        </div>
-
-                        {/* Action Button */}
-                        <button
-                            disabled={loading || !files?.length}
-                            type="submit"
-                            className="w-full flex justify-center items-center py-4 px-6 border border-transparent rounded-xl shadow-sm text-lg font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-[0.99]"
+            <div className="card p-6 sm:p-8">
+                <form onSubmit={onSubmit} className="space-y-7">
+                    <div>
+                        <span className="label">Images</span>
+                        <div
+                            className={`rounded-lg border border-dashed p-8 text-center transition-colors ${
+                                dragActive ? "border-accent bg-accent-soft" : "border-line hover:border-accent/50 hover:bg-surface-2"
+                            }`}
+                            onDragEnter={handleDrag}
+                            onDragLeave={handleDrag}
+                            onDragOver={handleDrag}
+                            onDrop={handleDrop}
                         >
-                            {loading ? (
-                                <>
-                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Analyzing Images...
-                                </>
-                            ) : (
-                                "Generate Inspection Report"
-                            )}
-                        </button>
-                    </form>
-
-                    {error && (
-                        <div className="mt-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-r">
-                            <p className="font-bold">Error</p>
-                            <p>{error}</p>
-                        </div>
-                    )}
-
-                    {/* Results Section */}
-                    {result && (
-                        <section className="mt-10 border-t pt-8 animate-fade-in">
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold text-gray-800">Analysis Result</h2>
-                                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                                    Analysis Complete
-                                </span>
-                            </div>
-                            
-                            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-inner max-h-125 overflow-y-auto">
-                                <div className="prose max-w-none">
-                                    <h3 className="text-xl font-semibold mb-2">{result.report.title}</h3>
-                                    <p className="text-gray-600 mb-4 italic">{result.report.summary}</p>
-                                    
-                                    <h4 className="font-semibold mt-4 mb-2">Key Findings:</h4>
-                                    <ul className="list-disc pl-5 space-y-2">
-                                        {result.report.findings.map((finding: any, idx: number) => (
-                                            <li key={idx} className="text-sm">
-                                                <span className="font-medium">{finding.area}:</span> {finding.observation}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            </div>
-                            
-                            <div className="mt-6 flex justify-end">
-                                <button
-                                    onClick={saveReport}
-                                    disabled={loading}
-                                    className="flex items-center px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
-                                >
-                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                    </svg>
-                                    {loading ? "Saving..." : "Save Report to Dashboard"}
+                            <input
+                                ref={fileInputRef}
+                                className="hidden"
+                                id="file_input"
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                onChange={handleChange}
+                            />
+                            <UploadIcon className="mx-auto mb-3 text-muted" width={24} height={24} />
+                            <p className="text-sm font-medium">
+                                Drag and drop images here, or{" "}
+                                <button type="button" onClick={onButtonClick} className="font-semibold text-accent hover:underline">
+                                    browse
                                 </button>
-                            </div>
-                            
-                            <p className="text-xs text-gray-400 mt-4 text-center">
-                                Disclaimer: This is an AI-generated analysis and should be verified by a certified professional.
                             </p>
-                        </section>
-                    )}
-                </div>
+                            <p className="mt-1 text-xs text-muted">Supports JPG, PNG, WEBP</p>
+                        </div>
+
+                        {files && files.length > 0 && (
+                            <ul className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+                                {Array.from(files).map((file, idx) => (
+                                    <li
+                                        key={idx}
+                                        className="flex aspect-square items-center justify-center rounded-lg border border-line bg-surface-2 p-2 text-center text-xs text-muted break-all"
+                                    >
+                                        {file.name}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+
+                    <div>
+                        <label htmlFor="prompt" className="label">
+                            Analysis instructions <span className="font-normal text-muted">(optional)</span>
+                        </label>
+                        <textarea
+                            id="prompt"
+                            rows={4}
+                            className="input resize-none"
+                            placeholder="E.g., 'Focus on the water damage on the ceiling', 'Check for structural cracks', 'Assess the condition of the roof shingles'..."
+                            value={prompt}
+                            onChange={(e) => setPrompt(e.target.value)}
+                        />
+                    </div>
+
+                    <button disabled={loading || !files?.length} type="submit" className="btn-primary w-full py-3">
+                        {loading ? (
+                            <>
+                                <Spinner />
+                                Analyzing images...
+                            </>
+                        ) : (
+                            "Generate Inspection Report"
+                        )}
+                    </button>
+                </form>
+
+                {error && (
+                    <div className="alert-error mt-6 flex items-start gap-2.5" role="alert">
+                        <AlertIcon className="mt-0.5 shrink-0" width={18} height={18} />
+                        <p>{error}</p>
+                    </div>
+                )}
+
+                {result && (
+                    <section className="mt-10 border-t border-line pt-8">
+                        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                            <h2 className="text-lg font-semibold">Analysis Result</h2>
+                            <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent">
+                                <CheckIcon width={14} height={14} />
+                                Analysis complete
+                            </span>
+                        </div>
+
+                        <div className="max-h-[32rem] overflow-y-auto rounded-lg border border-line bg-surface-2 p-6">
+                            <h3 className="text-lg font-semibold">{result.report.title}</h3>
+                            <p className="mb-5 mt-1 text-sm italic text-muted">{result.report.summary}</p>
+
+                            <h4 className="mb-2 text-sm font-semibold">Key findings</h4>
+                            <ul className="list-disc space-y-2 pl-5 text-sm">
+                                {result.report.findings.map((finding: any, idx: number) => (
+                                    <li key={idx}>
+                                        <span className="font-medium">{finding.area}:</span> {finding.observation}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <div className="mt-6 flex justify-end">
+                            <button onClick={saveReport} disabled={loading} className="btn-primary">
+                                {loading ? "Saving..." : "Save Report to Dashboard"}
+                            </button>
+                        </div>
+
+                        <p className="mt-4 text-center text-xs text-muted">
+                            Disclaimer: This is an AI-generated analysis and should be verified by a certified professional.
+                        </p>
+                    </section>
+                )}
             </div>
-        </main>
+        </div>
     );
 }

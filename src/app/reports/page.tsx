@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import PageHeader from "@/components/PageHeader";
+import { ChevronRightIcon, PlusIcon } from "@/components/Icons";
 
 export const dynamic = 'force-dynamic';
 
@@ -11,30 +13,55 @@ export default async function ReportsPage() {
     });
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-6">Saved Reports</h1>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {reports.map((report) => (
-                    <Link href={`/reports/${report.id}`} key={report.id} className="block">
-                        <div className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer h-full border border-gray-200">
-                            <h2 className="text-xl font-semibold mb-2 truncate">{report.title}</h2>
-                            <p className="text-gray-500 text-sm mb-4">
-                                {new Date(report.createdAt).toLocaleDateString()} {new Date(report.createdAt).toLocaleTimeString()}
-                            </p>
-                            <div className="text-gray-700 line-clamp-3 mb-4">
-                                {(report.findings as any)?.summary || "No summary available."}
-                            </div>
-                            <div className="flex items-center justify-between mt-auto">
-                                <span className="text-blue-600 text-sm font-medium">View Report &rarr;</span>
-                                <span className="text-gray-400 text-xs">{report.images.length} images</span>
-                            </div>
-                        </div>
+        <div>
+            <PageHeader
+                title="Reports"
+                description={`${reports.length} saved ${reports.length === 1 ? "report" : "reports"}`}
+                actions={
+                    <Link href="/image-analysis" className="btn-primary">
+                        <PlusIcon width={16} height={16} />
+                        New Report
                     </Link>
-                ))}
-                {reports.length === 0 && (
-                    <p className="text-gray-500 col-span-full text-center py-10">No reports found. Generate one in AI Analysis.</p>
-                )}
-            </div>
+                }
+            />
+
+            {reports.length === 0 ? (
+                <div className="card py-14 text-center text-sm text-muted">
+                    No reports found. Create one with New Report.
+                </div>
+            ) : (
+                <ul className="card divide-y divide-line overflow-hidden">
+                    {reports.map((report) => {
+                        const created = new Date(report.createdAt);
+                        return (
+                            <li key={report.id}>
+                                <Link
+                                    href={`/reports/${report.id}`}
+                                    className="group flex items-center gap-4 px-5 py-4 transition-colors hover:bg-surface-2"
+                                >
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-sm font-medium">{report.title}</p>
+                                        <p className="mt-0.5 truncate text-sm text-muted">
+                                            {(report.findings as any)?.summary || "No summary available."}
+                                        </p>
+                                    </div>
+                                    <div className="hidden shrink-0 text-right text-xs text-muted sm:block">
+                                        <p>{created.toLocaleDateString()}</p>
+                                        <p className="mt-0.5">
+                                            {report.images.length} {report.images.length === 1 ? "image" : "images"}
+                                        </p>
+                                    </div>
+                                    <ChevronRightIcon
+                                        className="shrink-0 text-muted transition-transform group-hover:translate-x-0.5"
+                                        width={18}
+                                        height={18}
+                                    />
+                                </Link>
+                            </li>
+                        );
+                    })}
+                </ul>
+            )}
         </div>
     );
 }

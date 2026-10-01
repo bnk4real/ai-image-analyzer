@@ -1,26 +1,187 @@
 @import "tailwindcss";
 
+/* Design tokens. Every surface/text color in the app comes from here so light
+   and dark stay consistent; never hard-code bg-white / text-gray-* in pages.
+   Palette: black (primary + text), blue (accent: links, active, focus),
+   red (danger + Logout). Greys are neutral. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f5f5f5;
+  --surface: #ffffff;
+  --surface-2: #efefef;
+  --line: #dedede;
+  --fg: #0a0a0a;
+  --muted: #5e5e5e;
+  --primary: #0a0a0a;
+  --primary-hover: #2a2a2a;
+  --primary-fg: #ffffff;
+  --accent: #0b63d1;
+  --accent-soft: #e6f0fc;
+  --danger: #d11f2b;
+  --danger-soft: #fde8e9;
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
+/* Theme: ThemeToggle sets data-theme="light"|"dark" on <html>. With no
+   attribute ("system") the OS preference decides. */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme]) {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface-2: #1e1e1e;
+    --line: #2c2c2c;
+    --fg: #f2f2f2;
+    --muted: #9b9b9b;
+    --primary: #f2f2f2;
+    --primary-hover: #d6d6d6;
+    --primary-fg: #0a0a0a;
+    --accent: #4da3ff;
+    --accent-soft: #10243a;
+    --danger: #ff6b6b;
+    --danger-soft: #2e1415;
+    color-scheme: dark;
   }
 }
 
+:root[data-theme="dark"] {
+  --bg: #0a0a0a;
+  --surface: #141414;
+  --surface-2: #1e1e1e;
+  --line: #2c2c2c;
+  --fg: #f2f2f2;
+  --muted: #9b9b9b;
+  --primary: #f2f2f2;
+  --primary-hover: #d6d6d6;
+  --primary-fg: #0a0a0a;
+  --accent: #4da3ff;
+  --accent-soft: #10243a;
+  --danger: #ff6b6b;
+  --danger-soft: #2e1415;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-fg: var(--primary-fg);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --font-sans: var(--font-noto-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+}
+
+@layer components {
+  .card {
+    @apply rounded-lg border border-line bg-surface;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-fg hover:bg-primary-hover;
+  }
+
+  .btn-secondary {
+    @apply border border-line bg-surface text-fg hover:bg-surface-2;
+  }
+
+  .input {
+    @apply block w-full rounded-md border border-line bg-surface px-3.5 py-2.5 text-sm text-fg placeholder:text-muted/70 focus:border-accent focus:outline-2 focus:outline-offset-0 focus:outline-accent/30 disabled:opacity-60;
+  }
+
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-fg;
+  }
+
+  .alert-error {
+    @apply rounded-md border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger;
+  }
+}
+
+/* Sidebar (desktop): 16rem open; "collapsed" (html[data-sidebar], set by the
+   layout script / AppShell) is a 4rem icon rail that expands over the content
+   on hover or keyboard focus (not mouse-click focus) without moving the page. Mobile uses the drawer. */
+.sidebar-rule {
+  display: none;
+}
+
+@media screen and (min-width: 1024px) {
+  .app-sidebar {
+    width: 16rem;
+    transition: width 150ms ease;
+  }
+
+  .app-main {
+    padding-left: 16rem;
+    transition: padding-left 150ms ease;
+  }
+
+  html[data-sidebar="collapsed"] .app-sidebar {
+    width: 4rem;
+  }
+
+  html[data-sidebar="collapsed"] .app-main {
+    padding-left: 4rem;
+  }
+
+  html[data-sidebar="collapsed"] .app-sidebar:hover,
+  html[data-sidebar="collapsed"] .app-sidebar:has(:focus-visible) {
+    width: 16rem;
+  }
+
+  html[data-sidebar="collapsed"] .app-sidebar:not(:hover):not(:has(:focus-visible)) .sidebar-label {
+    display: none;
+  }
+
+  html[data-sidebar="collapsed"] .app-sidebar:not(:hover):not(:has(:focus-visible)) .sidebar-rule {
+    display: block;
+  }
+}
+
+@media print {
+  .app-main {
+    padding-left: 0;
+  }
+}
+
+/* Reports are printed/exported on white paper regardless of the app theme. */
+.report-paper {
+  --surface: #ffffff;
+  --surface-2: #f2f2f2;
+  --line: #d9d9d9;
+  --fg: #0a0a0a;
+  --muted: #5e5e5e;
+  --accent: #0b63d1;
+  color-scheme: light;
+  background: var(--surface);
+  color: var(--fg);
+}
+
+@media print {
+  :root,
+  :root:not([data-theme]),
+  :root[data-theme="dark"] {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #f2f2f2;
+    --line: #d9d9d9;
+    --fg: #0a0a0a;
+    --muted: #5e5e5e;
+    color-scheme: light;
+  }
 }

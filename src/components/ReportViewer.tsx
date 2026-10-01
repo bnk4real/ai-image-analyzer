@@ -4,6 +4,8 @@
 import { useRef, useState } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import PageHeader from "@/components/PageHeader";
+import { DownloadIcon, PrinterIcon, Spinner } from "@/components/Icons";
 
 export default function ReportViewer({ report }: { report: any }) {
     const reportRef = useRef<HTMLDivElement>(null);
@@ -64,123 +66,95 @@ export default function ReportViewer({ report }: { report: any }) {
     }
 
     return (
-        <div className="container mx-auto p-4 max-w-4xl">
-            <div className="flex justify-between items-center mb-6 no-print">
-                <h1 className="text-2xl font-bold text-gray-800">Report Details</h1>
-                <div className="space-x-4">
-                    <button
-                        onClick={handlePrint}
-                        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded shadow transition"
-                    >
-                        Print
-                    </button>
-                    <button
-                        onClick={handleDownloadPDF}
-                        disabled={downloading}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow transition disabled:bg-blue-400"
-                    >
-                        {downloading ? "Generating PDF..." : "Download PDF"}
-                    </button>
-                </div>
+        <div className="mx-auto max-w-4xl">
+            <div className="print:hidden">
+                <PageHeader
+                    title="Report Details"
+                    actions={
+                        <>
+                            <button onClick={handlePrint} className="btn-secondary">
+                                <PrinterIcon width={16} height={16} />
+                                Print
+                            </button>
+                            <button onClick={handleDownloadPDF} disabled={downloading} className="btn-primary">
+                                {downloading ? <Spinner /> : <DownloadIcon width={16} height={16} />}
+                                {downloading ? "Generating PDF..." : "Download PDF"}
+                            </button>
+                        </>
+                    }
+                />
             </div>
 
-            {/* Printable Area */}
+            {/* Printable area: always light "paper". Only theme tokens here, no
+                opacity-modified colors, so html2canvas can render it. */}
             <div
                 ref={reportRef}
-                className="bg-white shadow-lg rounded-lg p-8 print:shadow-none print:p-0"
+                className="report-paper rounded-lg border border-line p-6 sm:p-10 print:border-0 print:p-0"
                 id="report-content"
             >
-                <div className="border-b pb-4 mb-6">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{report.title}</h1>
-                    <p className="text-gray-500 text-sm">
+                <div className="mb-8 border-b border-line pb-5">
+                    <h2 className="mb-2 text-3xl font-semibold tracking-tight">{report.title}</h2>
+                    <p className="text-sm text-muted">
                         Generated on {new Date(report.createdAt).toLocaleDateString()} at {new Date(report.createdAt).toLocaleTimeString()}
                     </p>
+                    {findings.summary && <p className="mt-4 text-sm leading-relaxed">{findings.summary}</p>}
                 </div>
-                {/* Findings Section */}
+
                 <section className="mb-8">
-                    <h2 className="text-xl font-semibold text-gray-800 mb-4 border-l-4 border-blue-500 pl-3">
-                        Detailed Findings
-                    </h2>
-                    <div className="space-y-6">
+                    <h3 className="mb-4 border-l-4 border-accent pl-3 text-lg font-semibold">Detailed Findings</h3>
+                    <div className="space-y-4">
                         {findings.findings ? (
                             findings.findings.map((finding: any, index: number) => (
-                                <div key={index} className="bg-gray-50 p-5 rounded-lg border border-gray-200 break-inside-avoid">
-                                    <h3 className="font-bold text-lg text-gray-900 mb-2">
+                                <div key={index} className="break-inside-avoid rounded-lg border border-line bg-surface-2 p-5">
+                                    <h4 className="mb-3 font-semibold">
                                         {index + 1}. {finding.area}
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                    </h4>
+                                    <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
                                         <div>
-                                            <span className="font-semibold text-gray-600 block">Observation:</span>
-                                            <p className="text-gray-800">{finding.observation}</p>
+                                            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">Observation</span>
+                                            <p>{finding.observation}</p>
                                         </div>
                                         <div>
-                                            <span className="font-semibold text-gray-600 block">Implication:</span>
-                                            <p className="text-gray-800">{finding.implication}</p>
+                                            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">Implication</span>
+                                            <p>{finding.implication}</p>
                                         </div>
                                         <div>
-                                            <span className="font-semibold text-gray-600 block">Recommendation:</span>
-                                            <p className="text-gray-800">{finding.recommendation}</p>
+                                            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">Recommendation</span>
+                                            <p>{finding.recommendation}</p>
                                         </div>
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <p className="text-gray-500">No detailed findings available.</p>
+                            <p className="text-sm text-muted">No detailed findings available.</p>
                         )}
                     </div>
                 </section>
 
-                {/* Images Section */}
                 {report.images && report.images.length > 0 && (
                     <section className="break-before-page">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-4 border-l-4 border-blue-500 pl-3">
-                            Analyzed Images
-                        </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {report.images.map((img: any ) => (
-                                <div key={img.id} className="border rounded-lg overflow-hidden break-inside-avoid">
-                                    {/* Note: In a real app, you'd serve these images from a storage bucket or DB. 
-                                        Since we don't have the actual image data stored (only metadata in DB for now), 
-                                        we'll display a placeholder or the filename. 
-                                        If you want to display the actual image, we need to store the base64 or upload it to a cloud storage.
-                                    */}
-                                    <div className="bg-gray-200 h-48 flex items-center justify-center text-gray-500">
+                        <h3 className="mb-4 border-l-4 border-accent pl-3 text-lg font-semibold">Analyzed Images</h3>
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            {report.images.map((img: any) => (
+                                <div key={img.id} className="break-inside-avoid overflow-hidden rounded-lg border border-line">
+                                    {/* Only image metadata is stored (no pixels), so show the filename as a placeholder. */}
+                                    <div className="flex h-44 items-center justify-center bg-surface-2 text-sm text-muted">
                                         [Image: {img.filename}]
                                     </div>
-                                    <div className="p-2 bg-gray-50 text-xs text-center text-gray-600">
+                                    <div className="border-t border-line px-3 py-2 text-center text-xs text-muted">
                                         {img.filename}
                                     </div>
                                 </div>
                             ))}
                         </div>
-                        <p className="text-xs text-gray-400 mt-4 italic">
-                            * Images are referenced from the analysis session.
-                        </p>
+                        <p className="mt-4 text-xs italic text-muted">* Images are referenced from the analysis session.</p>
                     </section>
                 )}
 
-                <div className="mt-12 pt-4 border-t text-center text-gray-400 text-xs">
+                <div className="mt-12 border-t border-line pt-4 text-center text-xs text-muted">
                     <p>Report generated by Report AI Analysis</p>
                 </div>
             </div>
-
-            <style jsx global>{`
-                @media print {
-                    .no-print {
-                        display: none !important;
-                    }
-                    body {
-                        background: white;
-                    }
-                    .container {
-                        max-width: 100%;
-                        padding: 0;
-                    }
-                    .shadow-lg {
-                        box-shadow: none !important;
-                    }
-                }
-            `}</style>
         </div>
     );
 }

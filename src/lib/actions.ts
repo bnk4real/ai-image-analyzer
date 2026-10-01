@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
-import { signInWithUsernameAndPassword } from "@/lib/auth";
+import { signInWithUsernameAndPassword, signOutLocal } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
 export async function analyzeImages(formData: FormData): Promise<any> {
@@ -50,4 +50,9 @@ export async function authenticate(
         return "An error occurred. Please try again.";
     }
     redirect("/dashboard");
+}
+
+export async function logout() {
+    await signOutLocal();
+    redirect("/login");
 }

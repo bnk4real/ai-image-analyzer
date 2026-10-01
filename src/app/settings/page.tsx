@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { testDbConnection } from "./actions";
+import PageHeader from "@/components/PageHeader";
 
 interface Model {
     id: string;
@@ -8,7 +8,6 @@ interface Model {
 }
 
 const SettingsPage = () => {
-    const [dbStatus, setDbStatus] = useState("");
     const [models, setModels] = useState<Model[]>([]);
     const [selectedModel, setSelectedModel] = useState("");
     const [loading, setLoading] = useState(false);
@@ -47,13 +46,6 @@ const SettingsPage = () => {
         load();
     }, []);
 
-    const handleTestDb = async () => {
-        setLoading(true);
-        const status = await testDbConnection();
-        setDbStatus(status);
-        setLoading(false);
-    };
-
     const handleSaveModel = async () => {
         setLoading(true);
         try {
@@ -75,47 +67,35 @@ const SettingsPage = () => {
     };
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Settings</h1>
-            <div className="bg-white shadow-md rounded-lg p-6">
-                <h2 className="text-xl font-semibold mb-2">Database Connection</h2>
-                <p className="text-gray-600 mb-4">
-                    Test the connection to your database to ensure it is configured
-                    correctly.
-                </p>
-                <button
-                    onClick={handleTestDb}
-                    disabled={loading}
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-400"
-                >
-                    {loading ? "Testing..." : "Test DB Connection"}
-                </button>
-                {dbStatus && (
-                    <p className="mt-4 text-sm font-medium">
-                        <strong>Status:</strong> {dbStatus}
-                    </p>
-                )}
-            </div>
-            <div className="bg-white shadow-md rounded-lg p-6 mt-4">
-                <h2 className="text-xl font-semibold mb-2">AI Models</h2>
-                <p className="text-gray-600 mb-4">Select an AI model to use for analysis.</p>
-                <select
-                    value={selectedModel}
-                    onChange={(e) => setSelectedModel(e.target.value)}
-                    className="block w-full p-2 border border-gray-300 rounded mb-4"
-                >
-                    <option value="" disabled>Select a model</option>
-                    {models.map((model, index) => (
-                        <option key={index} value={model.name}>{model.name}</option>
-                    ))}
-                </select>
-                <button
-                    onClick={handleSaveModel}
-                    disabled={loading || !selectedModel}
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-gray-400"
-                >
-                    {loading ? "Saving..." : "Save Model"}
-                </button>
+        <div className="mx-auto max-w-3xl">
+            <PageHeader title="Settings" description="The AI model used for analysis." />
+
+            <div className="space-y-6">
+                <section className="card p-6">
+                    <h2 className="font-semibold">AI model</h2>
+                    <p className="mb-4 mt-1 text-sm text-muted">Select an AI model to use for analysis.</p>
+                    <label htmlFor="model" className="label">
+                        Model
+                    </label>
+                    <select
+                        id="model"
+                        value={selectedModel}
+                        onChange={(e) => setSelectedModel(e.target.value)}
+                        className="input mb-4"
+                    >
+                        <option value="" disabled>
+                            Select a model
+                        </option>
+                        {models.map((model, index) => (
+                            <option key={index} value={model.name}>
+                                {model.name}
+                            </option>
+                        ))}
+                    </select>
+                    <button onClick={handleSaveModel} disabled={loading || !selectedModel} className="btn-primary">
+                        {loading ? "Saving..." : "Save Model"}
+                    </button>
+                </section>
             </div>
         </div>
     );
