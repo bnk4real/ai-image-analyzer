@@ -9,8 +9,11 @@ const notoSans = Noto_Sans({
   subsets: ["latin"],
 });
 
+// Local `dev` runs get a "DEV | " title prefix so they are not mistaken for the live site.
+const titlePrefix = process.env.NODE_ENV === "development" ? "DEV | " : "";
+
 export const metadata: Metadata = {
-  title: "AI Image Analyzer",
+  title: `${titlePrefix}AI Image Analyzer`,
   description: "Analyze and generate reports from your images using AI.",
 };
 
