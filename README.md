@@ -76,6 +76,23 @@ npm run dev
 
 Open http://localhost:3000 in your browser.
 
+## Demo Mode
+
+A demo deployment lets a visitor try the app with one click and no password. It must use its own database that holds only fictional data, never the real one.
+
+- `DEMO_MODE=1` adds an "Open the demo" button to the login page. It signs in as the `demo` account. Without `DEMO_MODE` the button and the sign-in do not exist.
+- Even with `DEMO_MODE=1`, the demo sign-in refuses while the database has any account other than `demo`, so it cannot open a database with real users.
+- Do not set `GOOGLE_API_KEY` on the demo deployment: the analysis features then fail with an error instead of spending API quota.
+- Set `DEMO_DATABASE_URL` in `.env` to a dedicated Postgres database, then:
+
+```bash
+npm run db:demo:migrate   # apply the Prisma migrations to the demo database only
+npm run db:demo:seed      # empties the app tables there and adds the demo account and 3 sample reports
+npm run dev:demo          # http://localhost:3002/ai-image-analyzer
+```
+
+`db:demo:seed` reads only `DEMO_DATABASE_URL`. It refuses when that is the same database as `DATABASE_URL` or `DIRECT_URL`, and when the target has any account other than `demo`. Run it again at any time to reset the demo. On a hosted demo, deploy a second project with `DEMO_MODE=1` and `DATABASE_URL` set to the demo database.
+
 ## Important Implementation Notes
 
 - The login page uses a dedicated layout at `src/app/login/layout.tsx` that intentionally does not render the site navbar. The root layout at `src/app/layout.tsx` renders the `Navbar` for all routes unless a nested layout overrides it.

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
-import { signInWithUsernameAndPassword, signOutLocal } from "@/lib/auth";
+import { signInAsDemo, signInWithUsernameAndPassword, signOutLocal } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
 export async function analyzeImages(formData: FormData): Promise<any> {
@@ -45,6 +45,17 @@ export async function authenticate(
         if (!user) {
             return "Invalid username or password.";
         }
+    } catch (error) {
+        console.error(error);
+        return "An error occurred. Please try again.";
+    }
+    redirect("/dashboard");
+}
+
+export async function authenticateDemo(): Promise<string | undefined> {
+    try {
+        const user = await signInAsDemo();
+        if (!user) return "The demo is not available right now.";
     } catch (error) {
         console.error(error);
         return "An error occurred. Please try again.";

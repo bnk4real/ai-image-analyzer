@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { DEMO_USERNAME, isDemoMode } from "@/lib/demo";
 import { prisma } from "@/lib/prisma";
 
 const SESSION_COOKIE_NAME = "report_ai_session";
@@ -80,17 +81,7 @@ export async function getCurrentUser() {
     return session.people;
 }
 
-export async function signInWithUsernameAndPassword(username: string, password: string) {
-    const user = await prisma.people.findFirst({
-        where: {
-            OR: [{ email: username }, { username }],
-        },
-    });
-    if (!user || !user.password_hash) return null;
-
-    const ok = verifyPasswordHash(password, user.password_hash);
-    if (!ok) return null;
-
+async function startSession(userId: string) {
     const token = base64UrlEncode(crypto.randomBytes(32));
     const tokenHash = hashToken(token);
 
@@ -99,7 +90,7 @@ export async function signInWithUsernameAndPassword(username: string, password: 
     await prisma.sessions.create({
         data: {
             id: crypto.randomUUID(),
-            user_id: user.user_id,
+            user_id: userId,
             token_hash: tokenHash,
             expires_at: expiresAt,
         },
@@ -113,6 +104,42 @@ export async function signInWithUsernameAndPassword(username: string, password: 
         path: "/",
         maxAge: SESSION_TTL_DAYS * 24 * 60 * 60,
     });
+}
+
+export async function signInWithUsernameAndPassword(username: string, password: string) {
+    const user = await prisma.people.findFirst({
+        where: {
+            OR: [{ email: username }, { username }],
+        },
+    });
+    if (!user || !user.password_hash) return null;
+
+    const ok = verifyPasswordHash(password, user.password_hash);
+    if (!ok) return null;
+
+    await startSession(user.user_id);
+
+    return user;
+}
+
+/**
+ * One-click sign-in as the demo account. Only works when DEMO_MODE=1, and refuses while the database holds
+ * any account other than the demo one, so it can never open a database with real users in it.
+ */
+export async function signInAsDemo() {
+    if (!isDemoMode()) return null;
+
+    // Not `NOT: { username }`: sign-up creates accounts with a NULL username, and SQL `NOT (NULL = 'demo')` skips them.
+    const [total, demo] = await Promise.all([
+        prisma.people.count(),
+        prisma.people.count({ where: { username: DEMO_USERNAME } }),
+    ]);
+    if (total !== demo) return null;
+
+    const user = await prisma.people.findUnique({ where: { username: DEMO_USERNAME } });
+    if (!user) return null;
+
+    await startSession(user.user_id);
 
     return user;
 }
