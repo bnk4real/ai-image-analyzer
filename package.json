@@ -11,6 +11,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
+    "user:create": "node scripts/create-user.mjs",
     "db:demo:migrate": "node scripts/with-demo-db.mjs npx prisma migrate deploy",
     "db:demo:seed": "node scripts/with-demo-db.mjs node scripts/seed-demo.mjs",
     "dev:demo": "node scripts/with-demo-db.mjs npx next dev --turbopack --port 3002"
